@@ -14,6 +14,11 @@ _base_ = [
     '../_base_/schedules/schedule_160k.py'
 ]
 
+# Custom imports to override mmseg's LayerDecayOptimizerConstructor
+custom_imports = dict(
+    imports=['mmcv_custom', 'mmseg_custom'],
+    allow_failed_imports=False)
+
 crop_size = (512, 512)
 
 # Model configuration
