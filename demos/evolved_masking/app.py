@@ -164,7 +164,7 @@ def update_derived(epoch, total_epochs, gamma, cluster_low, cluster_high):
     """Auto-compute alpha and K when epoch/gamma/cluster range changes."""
     alpha = compute_alpha(int(epoch), int(total_epochs), gamma)
     k_low, k_high = compute_dynamic_k(int(epoch), int(total_epochs), int(cluster_low), int(cluster_high))
-    return round(alpha, 3), f"{k_low}-{k_high}"
+    return f"{alpha:.3f}", f"{k_low}-{k_high}"
 
 
 # ── Visualization ─────────────────────────────────────────────────────
@@ -175,7 +175,7 @@ CMAP = ListedColormap(plt.cm.tab20.colors[:20])
 def visualize(
     image_pil, mask_ratio, clustering_method, cluster_low, cluster_high,
     em_iterations, spatial_noise_type, gamma, epoch, total_epochs,
-    alpha_display, k_display, seed,
+    seed,
 ):
     if image_pil is None:
         return None, None, "Upload an image first."
@@ -254,10 +254,9 @@ def visualize(
     axes[3].set_title(f"Evolved Mask ({pct:.0f}% masked, alpha={alpha:.2f})", fontsize=13)
     axes[3].axis("off")
 
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
 
     # ── Cluster figure: only non-empty parts ──────────────────────
-    # Filter to parts that actually have patches
     nonempty = [(pid, (clusters == pid).sum().item()) for pid in unique_parts if (clusters == pid).sum() > 0]
     n_show = min(len(nonempty), 8)
 
@@ -274,7 +273,7 @@ def visualize(
             cluster_axes[j].set_title(f"Part {j+1} ({count} patches)", fontsize=11)
             cluster_axes[j].axis("off")
         cluster_fig.suptitle(f"Semantic Parts ({method_short}, {n_parts} found)", fontsize=13)
-        cluster_fig.tight_layout()
+        cluster_fig.tight_layout(rect=[0, 0, 1, 0.92])
     else:
         cluster_fig = plt.figure(figsize=(4, 2))
         plt.text(0.5, 0.5, "No clusters found", ha="center", va="center")
@@ -313,8 +312,8 @@ def main():
                     ["EM (Expectation-Maximization)", "Hierarchical Clustering (HC)"],
                     value="EM (Expectation-Maximization)", label="Algorithm")
                 with gr.Row():
-                    cluster_low = gr.Number(value=10, label="K min", precision=0)
-                    cluster_high = gr.Number(value=40, label="K max", precision=0)
+                    cluster_low = gr.Slider(3, 30, value=10, step=1, label="K min")
+                    cluster_high = gr.Slider(10, 50, value=40, step=1, label="K max")
                 em_iterations = gr.Slider(5, 30, value=15, step=1, label="EM Iterations")
 
                 gr.Markdown("### Spatial Noise")
@@ -324,12 +323,12 @@ def main():
                 gamma = gr.Slider(0.1, 3.0, value=0.5, step=0.1,
                                    label="Gamma (0.5=sqrt, 1.0=linear, 2.0=quadratic)")
                 epoch = gr.Slider(0, 300, value=150, step=1, label="Current Epoch")
-                total_epochs = gr.Number(value=300, label="Total Epochs", precision=0)
+                total_epochs = gr.Slider(100, 500, value=300, step=10, label="Total Epochs")
 
                 gr.Markdown("### Auto-computed (from epoch, gamma, K range)")
                 with gr.Row():
-                    alpha_display = gr.Number(value=0.707, label="Alpha", precision=3, interactive=False)
-                    k_display = gr.Textbox(value="20-22", label="K range (this epoch)", interactive=False)
+                    alpha_display = gr.Textbox(value="0.707", label="Alpha", interactive=False)
+                    k_display = gr.Textbox(value="20-22", label="K range", interactive=False)
 
                 seed = gr.Slider(0, 100, value=42, step=1, label="Random Seed")
                 run_btn = gr.Button("Generate", variant="primary", size="lg")
@@ -351,8 +350,24 @@ def main():
             fn=visualize,
             inputs=[image_input, mask_ratio, clustering_method, cluster_low, cluster_high,
                     em_iterations, spatial_noise_type, gamma, epoch, total_epochs,
-                    alpha_display, k_display, seed],
+                    seed],
             outputs=[main_plot, cluster_plot, info_text],
+            api_name="generate",
+        )
+
+        gr.Markdown("### Examples")
+        gr.Examples(
+            examples=[
+                ["examples/dogs.jpg", 0.5, "EM (Expectation-Maximization)", 10, 40, 15, "Grid", 0.5, 150, 300, 42],
+                ["examples/bird.jpg", 0.4, "EM (Expectation-Maximization)", 10, 40, 15, "Grid", 0.5, 50, 300, 7],
+                ["examples/cat.jpg", 0.6, "Hierarchical Clustering (HC)", 5, 20, 15, "Grid", 0.5, 250, 300, 13],
+                ["examples/baseball.jpg", 0.5, "EM (Expectation-Maximization)", 10, 40, 15, "Random", 1.0, 299, 300, 42],
+            ],
+            inputs=[image_input, mask_ratio, clustering_method, cluster_low, cluster_high,
+                    em_iterations, spatial_noise_type, gamma, epoch, total_epochs, seed],
+            outputs=[main_plot, cluster_plot, info_text],
+            fn=visualize,
+            cache_examples=False,
         )
 
         gr.Markdown("""
@@ -370,7 +385,7 @@ def main():
         Ref: "Evolved Part Masking for Self-Supervised Learning" (CVPR 2023) integrated into MEDiC.
         """)
 
-    demo.launch()
+    demo.launch(show_error=True)
 
 
 if __name__ == "__main__":

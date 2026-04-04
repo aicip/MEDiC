@@ -46,6 +46,9 @@ python tools/train.py \
     runner.max_iters=1000 \
     checkpoint_config.interval=5000 \
     data_root="${ADE20K_ROOT}" \
+    data.train.data_root="${ADE20K_ROOT}" \
+    data.val.data_root="${ADE20K_ROOT}" \
+    data.test.data_root="${ADE20K_ROOT}" \
   --no-validate \
   2>&1
 

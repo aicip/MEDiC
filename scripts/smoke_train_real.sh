@@ -20,8 +20,7 @@ set -e
 # module load cuda   # Uncomment and set your CUDA module
 # module load cudnn  # Uncomment and set your cuDNN module
 
-REPO_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
-cd "$REPO_DIR"
+cd "${SLURM_SUBMIT_DIR}" || exit 1
 
 echo "================================================================"
 echo "MEDiC Real-Data Training Smoke Test"
@@ -30,7 +29,7 @@ echo "SLURM Job: $SLURM_JOB_ID"
 echo "================================================================"
 
 source .venv/bin/activate
-export PYTHONPATH="$REPO_DIR"
+export PYTHONPATH="${SLURM_SUBMIT_DIR}"
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
 # Distributed setup (single GPU)
