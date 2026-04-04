@@ -91,6 +91,10 @@ def main():
     cfg = Config.fromfile(args.config)
     if args.options is not None:
         cfg.merge_from_dict(args.options)
+
+    # Force re-register our custom LayerDecayOptimizerConstructor
+    # (mmseg's config loading may override the registration)
+    from mmcv_custom.layer_decay_optimizer_constructor import LayerDecayOptimizerConstructor  # noqa: F811
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
