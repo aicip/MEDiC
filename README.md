@@ -47,7 +47,7 @@ The bottom-right panel shows the full MEDiC framework with all three loss paths 
 ## Installation
 
 ```bash
-git clone https://github.com/drkostas/MEDiC.git
+git clone https://github.com/aicip/MEDiC.git
 cd MEDiC
 
 python -m venv .venv
