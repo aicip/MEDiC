@@ -2,6 +2,13 @@ import json
 from mmcv.runner import OPTIMIZER_BUILDERS, DefaultOptimizerConstructor
 from mmcv.runner import get_dist_info
 
+# mmseg has its own OPTIMIZER_BUILDERS registry (separate from mmcv's)
+# We must register in BOTH to ensure our constructor is used
+try:
+    from mmseg.core.builder import OPTIMIZER_BUILDERS as MMSEG_OPTIMIZER_BUILDERS
+except ImportError:
+    MMSEG_OPTIMIZER_BUILDERS = None
+
 
 def get_num_layer_for_vit(var_name, num_max_layer):
     if var_name in ("backbone.cls_token", "backbone.mask_token", "backbone.pos_embed"):
@@ -17,6 +24,8 @@ def get_num_layer_for_vit(var_name, num_max_layer):
 
 @OPTIMIZER_BUILDERS.register_module(force=True)
 class LayerDecayOptimizerConstructor(DefaultOptimizerConstructor):
+    """Custom LayerDecayOptimizerConstructor for ViT backbones.
+    Registered in both mmcv and mmseg OPTIMIZER_BUILDERS registries."""
     def add_params(self, params, module, prefix='', is_dcn_module=None):
         """Add all parameters of module to the params list.
         The parameters of the given module will be added to the list of param
@@ -82,3 +91,8 @@ class LayerDecayOptimizerConstructor(DefaultOptimizerConstructor):
         #     for name in group["param_names"]:
         #         group["params"].append(state_dict[name])
         params.extend(parameter_groups.values())
+
+
+# Register in mmseg's separate OPTIMIZER_BUILDERS registry
+if MMSEG_OPTIMIZER_BUILDERS is not None:
+    MMSEG_OPTIMIZER_BUILDERS.register_module(force=True)(LayerDecayOptimizerConstructor)
