@@ -1,0 +1,113 @@
+# MEDiC: Token + Pixel reconstruction
+# Paper Table 4 row 2: +Pixel -> 71.4% kNN
+# Adds MAE-style pixel decoder to baseline
+
+wandb_meta:
+  project: "MEDiC_pretrain"
+  entity: null  # Set to your W&B entity
+  name: "token_pixel"
+  desc: "Token distillation + Pixel reconstruction"
+
+model:
+  student:
+    name: "vit_base_patch16"
+    img_size: 224
+    patch_size: 16
+    embed_dim: 768
+    depth: 12
+    num_heads: 12
+    drop_path_rate: 0.1
+    init_values: 0.1
+    use_abs_pos_emb: true
+    use_rel_pos_bias: false
+    use_shared_rel_pos_bias: false
+    use_mask_tokens: false
+  teacher:
+    name: "ViT-B/16"
+    embed_dim: 768
+  decoder:
+    decoder_embed_dim: 512
+    decoder_depth: 8
+    decoder_num_heads: 16
+    replace_mask_tokens: true
+    use_sincos_pos_emb: true
+
+losses:
+  use_head_loss: true
+  use_decoder_loss: true       # <-- Pixel decoder loss enabled
+  use_cls_loss: false
+  head_loss_weight: 1.0
+  pixel_loss_weight: 1.0
+  cls_loss_weight: 1.0
+  loss_weighting_method: "literal"
+  head:
+    type: "smooth_l1"
+    beta: 1.0
+  decoder:
+    type: "l2"
+  cls:
+    type: "cosine"
+    temperature: 0.1
+  decoder_norm_pix_loss: true
+  normalize_targets: true
+  normalize_predictions: false
+  normalization_method: "variance"
+
+data:
+  batch_per_gpu: 256
+  num_workers: 16
+  data_path: "/path/to/imagenet"
+  train_dir: "/path/to/imagenet/train"
+  val_dir: "/path/to/imagenet/val"
+  subset: null
+  subset_start: 0
+  augmentation:
+    min_scale: 0.2
+    max_scale: 1.0
+    horizontal_flip_prob: 0.5
+    color_jitter: 0.4
+
+mask:
+  mask_ratio: 0.40
+  mask_type: "block"
+  shuffle_patches: false
+
+optim:
+  lr: 1.5e-3
+  wd: 0.05
+  betas: [0.9, 0.999]
+  layer_decay: 1.0
+  accum_iter: 1
+  grad_clip: 3.0
+
+schedule:
+  min_lr: 1.0e-5
+  warmup_epochs: 10
+  warmup_start_lr: 1.0e-5
+
+visualizations:
+  enable: true
+  layers_to_analyze: [0, 5, 11]
+  attention_heads_to_show: 4
+  plots:
+    raw_attention: false
+    layer_evolution: true
+    head_comparison: true
+    attention_rollout: false
+
+epochs: 300
+cpu: false
+seed: 42
+precision: "bf16"
+log_interval: 25
+output_dir: "output/pretrain"
+resume_path: null
+
+gpu: 0
+distributed: true
+dist_backend: "nccl"
+dist_url: "env://"
+dist_on_itp: true
+rank: 0
+world_size: 4
+local_rank: 0

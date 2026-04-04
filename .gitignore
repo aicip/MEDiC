@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments (files and symlinks)
+.venv
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Training outputs
+output/
+checkpoints/
+wandb/
+logs/
+
+# W&B artifacts
+run_mappings.json
+
+# Data (not committed)
+data/
+datasets/
+
+# Model checkpoints
+*.pth
+*.pt
+
+# Archives
+*.tar.gz
+*.zip
+*.tar
+
+# Internal docs and local settings (not for public)
+docs/
+local/
+
+# Testing
+.pytest_cache/
+configs/*_smoke*.yaml
+
+# Visualization images (user-provided)
+images/
+
+# Secrets
+.env
+
+# Screenshots
+image.png

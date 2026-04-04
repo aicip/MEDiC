@@ -1,0 +1,8 @@
+gradio==5.6.0
+huggingface_hub<0.28.0
+open_clip_torch>=2.20.0
+torch>=2.1.0
+torchvision>=0.16.0
+matplotlib>=3.7.0
+numpy>=1.24.0
+Pillow>=9.0.0
