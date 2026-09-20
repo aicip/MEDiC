@@ -6,6 +6,8 @@ MEDiC extends masked image modeling with CLIP distillation by combining three co
 
 **[Pre-trained Weights](https://huggingface.co/drkostas/MEDiC-ViT-Base)** | **[Paper](https://arxiv.org/abs/2603.29009)** | **[MaskDistill Base](https://github.com/drkostas/MaskDistill-PyTorch)** | <a href="https://huggingface.co/spaces/drkostas/MEDiC-Evolved-Masking"><img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg" alt="Open in Spaces"></a>
 
+> **See also: [ExPLoRe](https://github.com/aicip/ExPLoRe)** -- turns Soft-MoE dispatch weights into per-patch loss coefficients for multi-objective masked image modeling ([ECCV 2026](https://doi.org/10.1007/978-3-032-37314-4_16))
+
 ## Key Results (ViT-B/16, ImageNet-1K)
 
 | Evaluation | Result |
